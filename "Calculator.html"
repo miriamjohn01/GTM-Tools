@@ -1,0 +1,280 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #FAFAF7; color: #1F1F1F; }
+
+  .header { background: #FFE01B; padding: 20px 28px 16px; border-bottom: 2px solid #1F1F1F; }
+  .header h1 { font-size: 20px; font-weight: 900; color: #1F1F1F; letter-spacing: -0.5px; }
+  .header p { font-size: 13px; color: #3D3D3D; margin-top: 2px; }
+
+  .currency-bar { background: #1F1F1F; padding: 10px 28px; display: flex; align-items: center; gap: 8px; }
+  .currency-bar span { font-size: 11px; font-weight: 700; color: #FFE01B; letter-spacing: 1px; text-transform: uppercase; margin-right: 4px; }
+  .cur-btn { padding: 5px 14px; border-radius: 3px; border: 1.5px solid #555; background: transparent; color: #ccc; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .cur-btn.active { background: #FFE01B; color: #1F1F1F; border-color: #FFE01B; }
+
+  .main { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  .panel { padding: 24px 28px; }
+  .panel-left { background: #fff; border-right: 1.5px solid #1F1F1F; }
+  .panel-right { background: #FAFAF7; }
+
+  .section-label { font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: #888; margin-bottom: 12px; }
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; color: #1F1F1F; margin-bottom: 6px; }
+  .field input { width: 100%; padding: 9px 12px; border: 1.5px solid #1F1F1F; border-radius: 4px; font-size: 14px; background: #fff; color: #1F1F1F; outline: none; }
+  .field input:focus { border-color: #007C89; }
+  .field .hint { font-size: 11px; color: #888; margin-top: 4px; }
+  .prefix-wrap { position: relative; }
+  .prefix-wrap .prefix { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: #888; pointer-events: none; }
+  .prefix-wrap input { padding-left: 26px; }
+
+  .divider { height: 1.5px; background: #E8E8E8; margin: 20px 0; }
+
+  .search-box { width: 100%; padding: 7px 10px; border: 1.5px solid #D3D3D3; border-radius: 4px; font-size: 13px; margin-bottom: 8px; outline: none; }
+  .search-box:focus { border-color: #007C89; }
+
+  .country-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; max-height: 210px; overflow-y: auto; border: 1.5px solid #D3D3D3; border-radius: 4px; padding: 8px; background: #FAFAF7; }
+  .cbtn { padding: 6px 8px; border: 1.5px solid #D3D3D3; border-radius: 4px; font-size: 12px; cursor: pointer; background: #fff; color: #1F1F1F; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cbtn:hover { border-color: #007C89; color: #007C89; }
+  .cbtn.sel { background: #007C89; color: #fff; border-color: #007C89; }
+
+  .results-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  .badge { background: #FFE01B; border: 1.5px solid #1F1F1F; border-radius: 3px; font-size: 10px; font-weight: 800; padding: 3px 8px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+  .metric-card { background: #fff; border: 1.5px solid #1F1F1F; border-radius: 6px; padding: 14px 16px; margin-bottom: 12px; }
+  .mc-label { font-size: 11px; font-weight: 700; color: #888; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 4px; }
+  .mc-value { font-size: 26px; font-weight: 800; color: #1F1F1F; line-height: 1; }
+  .mc-sub { font-size: 12px; color: #888; margin-top: 4px; }
+  .metric-card.hl { background: #FFE01B; }
+  .metric-card.good { background: #CAFFBF; }
+  .metric-card.bad { background: #FFADAD; }
+
+  .mgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .mgrid .metric-card { margin-bottom: 0; }
+
+  .conv-section { background: #F0FAFA; border: 1.5px solid #007C89; border-radius: 6px; padding: 16px; margin-bottom: 12px; }
+  .conv-section .section-label { color: #007C89; margin-bottom: 8px; }
+  .slider-row { display: flex; align-items: center; gap: 10px; }
+  .slider-row input[type=range] { flex: 1; accent-color: #007C89; }
+  .conv-val { font-size: 18px; font-weight: 800; min-width: 52px; text-align: right; color: #007C89; }
+
+  .cost-bar { background: #fff; border: 1.5px solid #E0E0E0; border-radius: 6px; padding: 12px 14px; margin-bottom: 12px; font-size: 13px; }
+  .cost-bar .row { display: flex; justify-content: space-between; padding: 3px 0; }
+  .cost-bar .key { color: #888; }
+  .cost-bar .val { font-weight: 700; }
+
+  .prog-wrap { margin: 10px 0 4px; }
+  .prog-labels { display: flex; justify-content: space-between; font-size: 11px; color: #888; margin-bottom: 4px; }
+  .prog-track { height: 8px; background: #E8E8E8; border-radius: 4px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 4px; background: #007C89; transition: width 0.3s; }
+  .prog-fill.warn { background: #FF6B35; }
+  .prog-fill.good { background: #52B69A; }
+
+  .empty { text-align: center; padding: 48px 24px; color: #888; }
+  .empty .icon { font-size: 40px; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+    <div>
+      <h1>Mailchimp</h1>
+      <p>SMS ROI Calculator</p>
+    </div>
+    <div style="text-align:right;font-size:12px;color:#3D3D3D;">
+      <div style="font-weight:700;margin-bottom:2px;">James Duong</div>
+      <a href="mailto:james_duong@intuit.com" style="color:#1F1F1F;text-decoration:none;border-bottom:1px solid #1F1F1F;">james_duong@intuit.com</a>
+    </div>
+  </div>
+</div>
+
+<div class="currency-bar">
+  <span>Currency:</span>
+  <button class="cur-btn" id="btn-USD" onclick="setCurrency('USD')">$ USD</button>
+  <button class="cur-btn active" id="btn-GBP" onclick="setCurrency('GBP')">£ GBP</button>
+  <button class="cur-btn" id="btn-EUR" onclick="setCurrency('EUR')">€ EUR</button>
+  <button class="cur-btn" id="btn-AUD" onclick="setCurrency('AUD')">A$ AUD</button>
+</div>
+
+<div class="main">
+  <div class="panel panel-left">
+    <div class="section-label">Campaign inputs</div>
+    <div class="field">
+      <label>Gross profit per order</label>
+      <div class="prefix-wrap">
+        <span class="prefix" id="gpPrefix">£</span>
+        <input type="number" id="gp" placeholder="e.g. 25.00" min="0" step="0.01" oninput="calc()">
+      </div>
+    </div>
+    <div class="field">
+      <label>SMS contacts</label>
+      <input type="number" id="contacts" placeholder="e.g. 5000" min="1" step="1" oninput="calc()">
+      <div class="hint">Number of contacts you'll send to</div>
+    </div>
+    <div class="divider"></div>
+    <div class="section-label">Select country</div>
+    <input class="search-box" id="csearch" placeholder="Search country..." oninput="renderCountries()">
+    <div class="country-grid" id="cgrid"></div>
+  </div>
+
+  <div class="panel panel-right">
+    <div class="results-header">
+      <div class="section-label" style="margin:0">Results</div>
+      <div class="badge" id="curBadge">GBP £</div>
+    </div>
+    <div id="results">
+      <div class="empty"><div class="icon">📊</div><p>Enter your gross profit, contacts and select a country to see your breakeven analysis.</p></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var COUNTRIES = {
+  "United States":1,"Canada":3,"United Kingdom":5,"Australia":4,"Spain":5,"France":7,
+  "Germany":12,"Netherlands":12,"Switzerland":5,"Austria":4,"Ireland":9,"Italy":7,
+  "Norway":7,"Portugal":2,"Sweden":8,"Belgium":11,"Denmark":6,"Poland":3,"Finland":8,
+  "Luxembourg":9,"Greece":6,"Croatia":9,"Slovakia":5,"Slovenia":16,"Estonia":6,
+  "Iceland":7,"Latvia":5,"Malta":6,"Lithuania":5,"Isle of Man":13,"San Marino":7,
+  "Jersey":13,"Guernsey":13,"Albania":12,"Faroe Islands":6,"Republic of Moldova":9,"Montenegro":13
+};
+
+var TIERS = {
+  USD:[[1000,20],[2500,25],[3750,35],[5000,45],[6250,55],[7500,70],[10000,90],[12500,110],[15000,120],[20000,140],[25000,180],[30000,220],[35000,250],[40000,280],[45000,300],[50000,325],[55000,350],[60000,370],[65000,390],[70000,420],[75000,450],[87500,520],[100000,600],[112500,630],[125000,700],[137500,770],[150000,840],[162500,900],[175000,980],[200000,1100],[225000,1250],[250000,1400],[275000,1500],[300000,1650],[325000,1800],[350000,1950],[375000,2100],[400000,2200],[425000,2400],[450000,2500],[500000,2770],[550000,3040],[600000,3305],[650000,3570],[700000,3835],[750000,4095],[800000,4355],[850000,4615],[900000,4870],[950000,5125],[1000000,5375],[1100000,5895],[1200000,6410],[1300000,6920],[1400000,7425],[1500000,7930],[1600000,8430],[1700000,8925],[1800000,9415],[1900000,9905],[2000000,10390],[2100000,10870],[2200000,11345],[2300000,11815],[2400000,12285],[2500000,12750],[2750000,13970],[3000000,15180],[3250000,16380],[3500000,17570],[3750000,18750],[4000000,19920],[4250000,21080],[4500000,22230],[4750000,23370],[5000000,24500],[5500000,26840],[6000000,29160],[6500000,31460],[7000000,33740],[7500000,36000],[8000000,38240],[8500000,40460],[9000000,42660],[9500000,44840],[10000000,47000]],
+  GBP:[[1000,15.10],[2500,18.88],[3750,26.43],[5000,33.98],[6250,41.53],[7500,52.86],[10000,67.96],[12500,83.06],[15000,90.61],[20000,105.71],[25000,135.92],[30000,166.12],[35000,188.77],[40000,211.42],[45000,226.53],[50000,245.40],[55000,264.28],[60000,279.38],[65000,294.48],[70000,317.14],[75000,339.79],[87500,392.64],[100000,453.05],[112500,475.70],[125000,528.56],[137500,581.42],[150000,634.27],[162500,679.58],[175000,739.98],[200000,830.59],[225000,943.86],[250000,1057.12],[275000,1132.63],[300000,1245.89],[325000,1359.15],[350000,1472.42],[375000,1585.68],[400000,1661.19],[425000,1812.20],[450000,1887.71],[500000,2091.35],[550000,2294.20],[600000,2495.28],[650000,2694.59],[700000,2895.41],[750000,3091.73],[800000,3288.03],[850000,3484.33],[900000,3676.85],[950000,3869.38],[1000000,4058.13],[1100000,4450.46],[1200000,4839.55],[1300000,5224.60],[1400000,5605.88],[1500000,5986.65],[1600000,6364.65],[1700000,6738.38],[1800000,7108.33],[1900000,7477.28],[2000000,7844.45],[2100000,8206.55],[2200000,8565.48],[2300000,8922.63],[2400000,9279.78],[2500000,9626.25],[2750000,10547.83],[3000000,11460.90],[3250000,12369.90],[3500000,13275.33],[3750000,14156.25],[4000000,15039.60],[4250000,15915.40],[4500000,16783.65],[4750000,17644.35],[5000000,18497.50],[5500000,20274.60],[6000000,22015.80],[6500000,23752.30],[7000000,25473.70],[7500000,27180.00],[8000000,28871.20],[8500000,30547.30],[9000000,32208.30],[9500000,33854.20],[10000000,35485.00]],
+  EUR:[[1000,17.28],[2500,21.60],[3750,30.24],[5000,38.88],[6250,47.52],[7500,60.49],[10000,77.77],[12500,95.05],[15000,103.69],[20000,120.97],[25000,155.53],[30000,190.10],[35000,216.02],[40000,241.94],[45000,259.22],[50000,280.83],[55000,302.43],[60000,319.71],[65000,336.99],[70000,362.91],[75000,388.84],[87500,449.32],[100000,518.45],[112500,544.37],[125000,604.86],[137500,665.34],[150000,725.83],[162500,777.67],[175000,846.80],[200000,950.49],[225000,1080.10],[250000,1209.71],[275000,1296.12],[300000,1425.73],[325000,1555.34],[350000,1684.96],[375000,1814.57],[400000,1900.98],[425000,2073.79],[450000,2160.20],[500000,2393.33],[550000,2626.56],[600000,2855.52],[650000,3084.48],[700000,3313.44],[750000,3538.08],[800000,3762.72],[850000,3987.36],[900000,4207.68],[950000,4428.00],[1000000,4644.20],[1100000,5093.28],[1200000,5538.24],[1300000,5979.65],[1400000,6415.20],[1500000,6851.55],[1600000,7283.52],[1700000,7711.20],[1800000,8134.56],[1900000,8557.92],[2000000,8977.10],[2100000,9391.81],[2200000,9802.08],[2300000,10208.16],[2400000,10614.24],[2500000,11016.00],[2750000,12070.08],[3000000,13115.52],[3250000,14152.32],[3500000,15180.48],[3750000,16200.00],[4000000,17211.65],[4250000,18213.31],[4500000,19206.72],[4750000,20191.49],[5000000,21168.00],[5500000,23184.58],[6000000,25194.24],[6500000,27181.18],[7000000,29151.42],[7500000,31104.00],[8000000,32879.17],[8500000,34957.18],[9000000,36858.24],[9500000,38742.66],[10000000,40608.00]],
+  AUD:[[1000,11.41],[2500,14.26],[3750,19.96],[5000,25.67],[6250,31.37],[7500,39.93],[10000,51.33],[12500,62.74],[15000,68.44],[20000,79.85],[25000,102.67],[30000,125.48],[35000,142.59],[40000,159.70],[45000,171.11],[50000,185.37],[55000,199.63],[60000,211.03],[65000,222.44],[70000,239.55],[75000,256.66],[87500,296.59],[100000,342.22],[112500,359.33],[125000,399.26],[137500,439.18],[150000,479.11],[162500,513.33],[175000,558.96],[200000,627.40],[225000,712.96],[250000,798.51],[275000,855.55],[300000,941.10],[325000,1026.66],[350000,1112.21],[375000,1197.77],[400000,1254.80],[425000,1368.88],[450000,1425.91],[500000,1581.87],[550000,1735.84],[600000,1887.16],[650000,2038.47],[700000,2189.79],[750000,2338.25],[800000,2486.72],[850000,2635.18],[900000,2780.57],[950000,2926.38],[1000000,3068.93],[1100000,3365.85],[1200000,3660.11],[1300000,3951.72],[1400000,4239.68],[1500000,4527.63],[1600000,4813.83],[1700000,5096.18],[1800000,5374.97],[1900000,5653.76],[2000000,5932.49],[2100000,6206.57],[2200000,6477.80],[2300000,6746.17],[2400000,7014.55],[2500000,7280.25],[2750000,7977.07],[3000000,8667.78],[3250000,9352.98],[3500000,10032.87],[3750000,10706.25],[4000000,11374.92],[4250000,12036.28],[4500000,12693.33],[4750000,13344.27],[5000000,13991.50],[5500000,15325.44],[6000000,16650.56],[6500000,17971.54],[7000000,19263.98],[7500000,20556.00],[8000000,21835.04],[8500000,23102.66],[9000000,24358.62],[9500000,25601.88],[10000000,26837.00]]
+};
+
+var SYMBOLS = {USD:'$',GBP:'£',EUR:'€',AUD:'A$'};
+var LABELS  = {USD:'USD $',GBP:'GBP £',EUR:'EUR €',AUD:'AUD A$'};
+
+var selCountry = '';
+var convRate   = 2;
+var currency   = 'GBP';
+
+function setCurrency(c) {
+  currency = c;
+  document.querySelectorAll('.cur-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('btn-'+c).classList.add('active');
+  document.getElementById('gpPrefix').textContent = SYMBOLS[c];
+  document.getElementById('curBadge').textContent = LABELS[c];
+  calc();
+}
+
+function getTierCost(credits) {
+  var t = TIERS[currency];
+  for (var i = 0; i < t.length; i++) { if (credits <= t[i][0]) return {cost:t[i][1], tier:t[i][0]}; }
+  return {cost:t[t.length-1][1], tier:t[t.length-1][0]};
+}
+
+function renderCountries() {
+  var grid = document.getElementById('cgrid');
+  var q = (document.getElementById('csearch').value || '').toLowerCase();
+  grid.innerHTML = '';
+  var keys = Object.keys(COUNTRIES);
+  for (var i = 0; i < keys.length; i++) {
+    var name = keys[i];
+    if (q && name.toLowerCase().indexOf(q) === -1) continue;
+    var btn = document.createElement('button');
+    btn.className = 'cbtn' + (selCountry === name ? ' sel' : '');
+    btn.textContent = name;
+    btn.setAttribute('data-name', name);
+    btn.onclick = selectCountry;
+    grid.appendChild(btn);
+  }
+}
+
+function selectCountry() {
+  selCountry = this.getAttribute('data-name');
+  renderCountries();
+  calc();
+}
+
+function n(v,d) { d=d||0; return Number(v).toLocaleString('en-GB',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+
+function calc() {
+  var gp  = parseFloat(document.getElementById('gp').value)||0;
+  var cnt = parseInt(document.getElementById('contacts').value)||0;
+  var box = document.getElementById('results');
+  var sym = SYMBOLS[currency];
+
+  if (!gp || !cnt || !selCountry) {
+    box.innerHTML = '<div class="empty"><div class="icon">📊</div><p>Enter your gross profit, contacts and select a country to see your breakeven analysis.</p></div>';
+    return;
+  }
+
+  var cpc    = COUNTRIES[selCountry];
+  var totCr  = cnt * cpc;
+  var tr     = getTierCost(totCr);
+  var cost   = tr.cost;
+  var tier   = tr.tier;
+  var beUnits= Math.ceil(cost / gp);
+  var beConv = (beUnits / cnt) * 100;
+  var tUnits = Math.round(cnt * convRate / 100);
+  var profit = (tUnits * gp) - cost;
+  var pClass = profit > 0 ? 'good' : profit < 0 ? 'bad' : '';
+  var pPct   = Math.min(100, Math.round((convRate / beConv) * 100));
+  var pFill  = pPct >= 100 ? 'good' : pPct >= 60 ? '' : 'warn';
+
+  box.innerHTML =
+    '<div class="cost-bar">'+
+      '<div class="row"><span class="key">Country</span><span class="val">'+selCountry+'</span></div>'+
+      '<div class="row"><span class="key">Credits per SMS</span><span class="val">'+cpc+'</span></div>'+
+      '<div class="row"><span class="key">Total credits</span><span class="val">'+n(totCr)+'</span></div>'+
+      '<div class="row"><span class="key">Credit tier</span><span class="val">'+n(tier)+' credits</span></div>'+
+      '<div class="row"><span class="key">Campaign cost</span><span class="val" style="color:#007C89;font-size:15px;">'+sym+n(cost,2)+'</span></div>'+
+      '<div class="row"><span class="key">Cost per send</span><span class="val">'+sym+(cost/cnt).toFixed(4)+'</span></div>'+
+    '</div>'+
+    '<div class="mgrid">'+
+      '<div class="metric-card hl"><div class="mc-label">Units to breakeven</div><div class="mc-value">'+n(beUnits)+'</div><div class="mc-sub">orders needed</div></div>'+
+      '<div class="metric-card"><div class="mc-label">Breakeven conversion</div><div class="mc-value">'+beConv.toFixed(2)+'%</div><div class="mc-sub">of '+n(cnt)+' contacts</div></div>'+
+      '<div class="metric-card"><div class="mc-label">Gross profit/order</div><div class="mc-value">'+sym+n(gp,2)+'</div><div class="mc-sub">your margin</div></div>'+
+      '<div class="metric-card"><div class="mc-label">SMS contacts</div><div class="mc-value">'+n(cnt)+'</div><div class="mc-sub">recipients</div></div>'+
+    '</div>'+
+    '<div class="conv-section">'+
+      '<div class="section-label">Target conversion rate</div>'+
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">'+
+        '<input type="number" id="cslider" min="0.1" max="100" step="0.1" value="'+convRate+'" oninput="updateConv(this.value)" style="width:100px;padding:8px 10px;border:1.5px solid #007C89;border-radius:4px;font-size:16px;font-weight:700;color:#007C89;outline:none;background:#fff;">'+
+        '<span style="font-size:16px;font-weight:700;color:#007C89;">%</span>'+
+      '</div>'+
+      '<div class="prog-wrap">'+
+        '<div class="prog-labels"><span>0%</span><span>Breakeven: '+beConv.toFixed(2)+'%</span></div>'+
+        '<div class="prog-track"><div class="prog-fill '+pFill+'" id="pfill" style="width:'+pPct+'%"></div></div>'+
+      '</div>'+
+      '<div class="mgrid" style="margin-top:12px;">'+
+        '<div class="metric-card"><div class="mc-label">Estimated units sold</div><div class="mc-value" id="eunits">'+n(tUnits)+'</div><div class="mc-sub" id="eunits-sub">at '+convRate.toFixed(1)+'% conv.</div></div>'+
+        '<div class="metric-card '+pClass+'" id="pcard"><div class="mc-label">Estimated gross profit</div><div class="mc-value" id="eprofit">'+(profit<0?'-':'')+sym+n(Math.abs(profit),2)+'</div><div class="mc-sub" id="psub">'+(profit>=0?'after SMS cost':'net loss')+'</div></div>'+
+      '</div>'+
+    '</div>';
+
+  window._s = {gp:gp,cnt:cnt,cost:cost,beConv:beConv,beUnits:beUnits,cpc:cpc,tier:tier};
+}
+
+function updateConv(v) {
+  convRate = parseFloat(v);
+  document.getElementById('cval').textContent = convRate.toFixed(1)+'%';
+  if (!window._s) return;
+  var s=window._s, sym=SYMBOLS[currency];
+  var tu = Math.round(s.cnt * convRate / 100);
+  var ep = (tu * s.gp) - s.cost;
+  var pp = Math.min(100, Math.round((convRate / s.beConv)*100));
+  var pc = ep>0?'good':ep<0?'bad':'';
+  var pf2= pp>=100?'good':pp>=60?'':'warn';
+  document.getElementById('eunits').textContent = n(tu);
+  document.getElementById('eunits-sub').textContent = 'at '+convRate.toFixed(1)+'% conv.';
+  document.getElementById('eprofit').textContent = (ep<0?'-':'')+sym+n(Math.abs(ep),2);
+  document.getElementById('psub').textContent = ep>=0?'after SMS cost':'net loss';
+  document.getElementById('pcard').className = 'metric-card '+pc;
+  var pf=document.getElementById('pfill');
+  pf.style.width=pp+'%';
+  pf.className='prog-fill '+pf2;
+}
+
+renderCountries();
+</script>
+</body>
+</html>
